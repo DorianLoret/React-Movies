@@ -4,35 +4,59 @@ import Card from "./Card";
 
 const Form = () => {
   const [moviesData, setMoviesData] = useState([]);
+  const [search, setSearch] = useState("black");
+  const [sortGoodBad, setSortGoodBad] = useState(null);
 
   useEffect(() => {
     axios
       .get(
-        `https://api.themoviedb.org/3/search/movie?api_key=2055c886aa6c8e408793c1a7fefbe9cb&language=fr-FR&query=black&page=1&include_adult=false`
+        `https://api.themoviedb.org/3/search/movie?api_key=2055c886aa6c8e408793c1a7fefbe9cb&language=fr-FR&query=${search}&page=1&include_adult=false`
       )
       .then((res) => setMoviesData(res.data.results));
-  }, []);
+  }, [search]);
 
   return (
     <div className="form-component">
       <div className="form-container">
         <form>
-          <input type="text" placeholder="Entrez le nom d'un film" />
+          <input
+            type="text"
+            placeholder="Entrez le nom d'un film"
+            id="search-input"
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <input type="submit" value="Rechercher" />
         </form>
         <div className="btn-sort-container">
-          <div className="btn-sort" id="goodToBad">
+          <div
+            className="btn-sort"
+            id="goodToBad"
+            onClick={() => setSortGoodBad("goodToBad")}
+          >
             Top <span>→</span>
           </div>
-          <div className="btn-sort" id="badToGood">
+          <div
+            className="btn-sort"
+            id="badToGood"
+            onClick={() => setSortGoodBad("badToGood")}
+          >
             Flop <span>→</span>
           </div>
         </div>
       </div>
       <div className="result">
-        {moviesData.slice(0, 12).map((movie) => (
-          <Card movie={movie} key={movie.id} />
-        ))}
+        {moviesData
+          .slice(0, 12)
+          .sort((a, b) => {
+            if (sortGoodBad === "goodToBad") {
+              return b.vote_average - a.vote_average;
+            } else if (sortGoodBad === "badToGood") {
+              return a.vote_average - b.vote_average;
+            }
+          })
+          .map((movie) => (
+            <Card movie={movie} key={movie.id} />
+          ))}
       </div>
     </div>
   );
